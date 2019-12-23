@@ -4,6 +4,8 @@ import { HostnameStrategy } from "./HostnameStrategy";
 import { GradualRolloutRandomStrategy } from "./GradualRolloutRandomStrategy";
 import { GradualRolloutSessionStrategy } from "./GradualRolloutSessionStrategy";
 import { GradualRolloutUserStrategy } from "./GradualRolloutUserStrategy";
+import { UserWithIdStrategy } from "./UserWithIdStrategy";
+import { RemoteAddressStrategy } from "./RemoteAddressStrategy";
 
 export const defaultStrategies: IExperimentStrategy[] = [
     new DefaultStrategy(),
@@ -11,4 +13,6 @@ export const defaultStrategies: IExperimentStrategy[] = [
     new GradualRolloutRandomStrategy(),
     new GradualRolloutUserStrategy(),
     new GradualRolloutSessionStrategy(),
+    new UserWithIdStrategy(),
+    new RemoteAddressStrategy(),
 ];
