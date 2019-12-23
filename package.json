@@ -23,11 +23,13 @@
   },
   "homepage": "https://github.com/mahasak/bearmaster-client-js#readme",
   "dependencies": {
-    "husky": "^3.1.0"
+    "murmurhash3js": "^3.0.1"
   },
   "devDependencies": {
     "@types/jest": "^24.0.24",
+    "@types/murmurhash3js": "^3.0.2",
     "@types/node": "^12.12.21",
+    "husky": "^3.1.0",
     "jest": "^24.9.0",
     "ts-jest": "^24.2.0",
     "typescript": "^3.7.4"
