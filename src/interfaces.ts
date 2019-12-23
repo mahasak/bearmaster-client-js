@@ -25,8 +25,8 @@ export interface IExperimentStrategy {
     checkConstraint(constraint: IExperimentConstraint, context: IExperimentContext): boolean;
     checkConstraints(constraints: IExperimentConstraint[], context: IExperimentContext): boolean;
     getName(): string;
-    isEnabled(params: any, context: IExperimentContext): boolean;
-    isEnabledWithConstraint(params: any, context: IExperimentContext, constraints: IExperimentConstraint[]): boolean;
+    isEnabled(params: any, context?: IExperimentContext): boolean;
+    isEnabledWithConstraint(params: any, context?: IExperimentContext, constraints?: IExperimentConstraint[]): boolean;
 }
 
 export interface IExperimentStrategyInfo {
