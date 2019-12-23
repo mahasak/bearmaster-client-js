@@ -16,5 +16,5 @@ export const defaultStrategies: IExperimentStrategy[] = [
     new GradualRolloutSessionStrategy(),
     new UserWithIdStrategy(),
     new RemoteAddressStrategy(),
-    new FlexibleRolloutStrategy();
+    new FlexibleRolloutStrategy()
 ];
