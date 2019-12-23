@@ -1,13 +1,7 @@
 import { EventEmitter } from 'events';
+import { Operator, ParamType } from './enums';
 
-export enum ExperimentOperator {
-    IN = <any>'IN',
-    NOT_IN = <any>'NOT_IN',
-}
 
-export enum ExperimentParamType {
-    STRING = 'string',
-}
 
 export interface IExperimentContext {
     [key: string]: string | undefined | number;
@@ -29,11 +23,10 @@ export interface IExperiment {
 
 export interface IExperimentStrategy {
     name: string;
-    enabled: boolean;
     checkConstraint(constraint: IExperimentConstraint, context: IExperimentContext): boolean;
     checkConstraints(constraints: IExperimentConstraint[], context: IExperimentContext): boolean;
     isEnabled(params: any, context: IExperimentContext): boolean;
-    isEnableWithConstraint(params: any, context: IExperimentContext, constraints: IExperimentConstraint[]): boolean;
+    isEnabledWithConstraint(params: any, context: IExperimentContext, constraints: IExperimentConstraint[]): boolean;
 }
 
 export interface IExperimentStrategyInfo {
@@ -44,13 +37,13 @@ export interface IExperimentStrategyInfo {
 
 export interface IExperimentConstraint {
     contextName: string;
-    operator: ExperimentOperator;
+    operator: Operator;
     values: string[];
 }
 
 export interface IExperimentParam {
     name: string;
-    type: ExperimentParamType;
+    type: ParamType;
     value: string;
 }
 
