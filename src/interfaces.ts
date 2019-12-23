@@ -22,9 +22,9 @@ export interface IExperiment {
 }
 
 export interface IExperimentStrategy {
-    name: string;
     checkConstraint(constraint: IExperimentConstraint, context: IExperimentContext): boolean;
     checkConstraints(constraints: IExperimentConstraint[], context: IExperimentContext): boolean;
+    getName(): string;
     isEnabled(params: any, context: IExperimentContext): boolean;
     isEnabledWithConstraint(params: any, context: IExperimentContext, constraints: IExperimentConstraint[]): boolean;
 }

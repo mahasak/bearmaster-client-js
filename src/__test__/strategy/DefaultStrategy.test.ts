@@ -1,11 +1,11 @@
 import { DefaultStrategy } from '../../strategy/DefaultStrategy';
 
 test('default strategy should enabled by default', () => {
-    const defaultStrategy = new DefaultStrategy()
-    expect(defaultStrategy.isEnabled()).toBe(true);
+    const strategy = new DefaultStrategy();
+    expect(strategy.isEnabled()).toBe(true);
 });
 
-test('default strategy should enabled by default', () => {
-    const defaultStrategy = new DefaultStrategy()
-    expect(defaultStrategy.name === "default");
+test('default strategy name should be default', () => {
+    const strategy = new DefaultStrategy();
+    expect(strategy.getName()).toBe("default");
 });

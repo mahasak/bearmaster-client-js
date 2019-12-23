@@ -12,13 +12,15 @@ const resolveContextValue = (context: IExperimentContext, field: string) => {
 }
 
 export abstract class Strategy implements IExperimentStrategy {
-    public name: string;
+    private name: string;
     private returnValue: boolean;
 
     constructor(name: string, returnValue: boolean = false) {
         this.name = name || 'unknown';
         this.returnValue = returnValue;
     }
+
+    getName(): string { return this.name; }
 
     checkConstraint(constraint: IExperimentConstraint, context: IExperimentContext): boolean {
         const field = constraint.contextName;
