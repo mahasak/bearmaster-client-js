@@ -1,8 +1,6 @@
 import { EventEmitter } from 'events';
 import { Operator, ParamType } from './enums';
 
-
-
 export interface IExperimentContext {
     [key: string]: string | undefined | number;
     userId?: string;
