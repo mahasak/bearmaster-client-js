@@ -10,13 +10,14 @@ export interface StorageOptions {
 export class Storage extends EventEmitter implements EventEmitter {
     // ready is a "ready"-flag to signal that storage is ready with data,
     // and to signal to backup not to store fetched backup
-    private ready: boolean = false;
-    private data: any;
+    private ready: boolean;
+    protected data: any;
     private path: string;
     private schemaName: string = "experiment-repo-schema";
 
     constructor({ backupPath, appName }: StorageOptions) {
         super();
+        this.ready = false;
         this.data = {};
         this.path = join(backupPath, `/${this.schemaName}-v1-${this.safeAppName(appName)}.json`);
         this.load();

@@ -1,6 +1,7 @@
 import * as request from 'request';
 import { CustomHeaders } from './interfaces';
 import { ExperimentConstant } from './enums'
+
 export interface RequestOptions {
     url: string;
     timeout?: number;
