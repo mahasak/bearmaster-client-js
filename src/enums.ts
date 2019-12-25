@@ -6,3 +6,9 @@ export enum Operator {
 export enum ParamType {
     STRING = 'string',
 }
+
+export enum ExperimentConstant {
+    APPNAME_HEADER = 'EXPERIMENT-APPNAME',
+    INSTANCEID_HEADER = 'EXPERIMENT-INSTANCE',
+    USER_AGENT = 'USER-AGENT',
+} 

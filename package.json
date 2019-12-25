@@ -24,7 +24,8 @@
   "homepage": "https://github.com/mahasak/bearmaster-client-js#readme",
   "dependencies": {
     "ip": "^1.1.5",
-    "murmurhash3js": "^3.0.1"
+    "murmurhash3js": "^3.0.1",
+    "request": "^2.88.0"
   },
   "devDependencies": {
     "@types/ip": "^1.1.0",
@@ -32,6 +33,7 @@
     "@types/mkdirp": "^0.5.2",
     "@types/murmurhash3js": "^3.0.2",
     "@types/node": "^12.12.21",
+    "@types/request": "^2.48.4",
     "husky": "^3.1.0",
     "jest": "^24.9.0",
     "mkdirp": "^0.5.1",
