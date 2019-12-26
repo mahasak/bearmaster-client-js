@@ -5,7 +5,9 @@
   "main": "./lib/index.js",
   "typings": "./lib/index.d.ts",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "test:coverage": "npm test -- --coverage",
+    "test:badges": "npm run test:coverage  && jest-coverage-badges"
   },
   "repository": {
     "type": "git",
@@ -36,6 +38,8 @@
     "@types/request": "^2.48.4",
     "husky": "^3.1.0",
     "jest": "^24.9.0",
+    "jest-coverage-badges": "^1.1.2",
+    "make-coverage-badge": "^1.2.0",
     "mkdirp": "^0.5.1",
     "nock": "^11.7.0",
     "ts-jest": "^24.2.0",

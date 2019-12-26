@@ -70,7 +70,7 @@ test('test storage component', () => {
         refreshInterval: 0,
         StorageImpl: MockStorage,
     });
-
+    
     repo.once('data', () => {
         const savedFeature = repo.getToggle(feature.name);
         expect(savedFeature.enabled === feature.enabled).toBeTruthy();
@@ -81,6 +81,9 @@ test('test storage component', () => {
 
         const featureToggle = repo.getToggle('feature');
         expect(featureToggle).toBeTruthy();
+        repo.emit('Tested');
 
     })   
+    
+    
 });
