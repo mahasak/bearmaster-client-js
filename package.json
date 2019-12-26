@@ -46,8 +46,8 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "npm test",
-      "pre-push": "npm test"
+      "pre-commit": "npm run test:coverage  && jest-coverage-badges",
+      "pre-push": "npm test -- --coverage"
     }
   }
 }

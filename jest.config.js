@@ -10,6 +10,7 @@ module.exports = {
       "^.+\\.(ts|tsx)$": "ts-jest"
     },
     "coverageReporters": [
-      "json-summary"
+      "json-summary",
+      "text",
     ]
   }
