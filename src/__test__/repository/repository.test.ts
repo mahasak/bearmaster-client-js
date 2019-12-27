@@ -3,52 +3,28 @@ import * as nock from 'nock';
 
 import Repository from '../../repository';
 import { Storage } from '../../storage';
+import { MockStorage } from './MockStorage';
 import { doesNotReject } from 'assert';
+import { setup } from './setup'
 
 const appName = 'foo';
 const instanceId = 'bar';
 
-class MockStorage extends Storage {
-    constructor() {
-        super({
-            backupPath: "/test",
-            appName: appName
-        });
-        this.data = {};
-        process.nextTick(() => this.emit('ready'));
-    }
 
-    safeAppName(appName: string = '') {
-        return appName.replace(/\//g, '_');
-    }
-
-    persist(): void {
-    }
-
-    load(): void {
-    }
-
-    reset(data: any) {
-        this.data = data;
-    }
-
-    get(name: string) {
-        return this.data[name];
-    }
-
-    getAll() {
-        return this.data;
-    }
+function testEventOnce(eventEmitter: EventEmitter, eventName: string, callback: () => void) {
+    return new Promise((resolve, reject) => {
+        eventEmitter.once(eventName, async () => {
+            try {
+                callback()
+                resolve()
+            } catch (err) {
+                reject(err)
+            }
+        })
+    })
 }
 
-function setup(url: string, toggles: any, headers = {}) {
-    return nock(url)
-        .persist()
-        .get('/client/features')
-        .reply(200, { features: toggles }, headers);
-}
-
-test('test storage component', () => {
+describe('test storage component', () => {
     const feature = {
         name: 'feature',
         enabled: true,
@@ -59,7 +35,7 @@ test('test storage component', () => {
         ],
     };
 
-    const url = 'http://experiment-server-domain.mahasak.com';
+    const url = 'http://experiment-server-domain-1.mahasak.com';
 
     const setupResult = setup(url, [feature]);
     const repo = new Repository({
@@ -70,20 +46,58 @@ test('test storage component', () => {
         refreshInterval: 0,
         StorageImpl: MockStorage,
     });
-    
-    repo.once('data', () => {
-        const savedFeature = repo.getToggle(feature.name);
-        expect(savedFeature.enabled === feature.enabled).toBeTruthy();
-        expect(savedFeature.strategies[0].name === feature.strategies[0].name).toBeTruthy();
+    test('should read from endpoint', () => {
+        // Noted that this can be either await or return
+        return testEventOnce(repo, 'data', () => {
+            // Do things here
+            const savedFeature = repo.getToggle(feature.name);
+            expect(savedFeature.enabled === feature.enabled).toBeTruthy();
+            expect(savedFeature.strategies[0].name === feature.strategies[0].name).toBeTruthy();
 
-        const featureToggles = repo.getToggles();
-        expect(featureToggles[0].name).toEqual('feature');
+            const featureToggles = repo.getToggles();
+            expect(featureToggles[0].name).toEqual('feature');
 
-        const featureToggle = repo.getToggle('feature');
-        expect(featureToggle).toBeTruthy();
-        repo.emit('Tested');
-
-    })   
-    
-    
+            const featureToggle = repo.getToggle('feature');
+            expect(featureToggle).toBeTruthy();
+            repo.emit('Tested');
+        })
+    })
 });
+
+
+describe('should poll for changes', () => {
+    const url = 'http://experiment-server-domain-2.mahasak.com';
+    setup(url, []);
+    const repo = new Repository({
+        backupPath: 'foo-bar',
+        url,
+        appName,
+        instanceId,
+        refreshInterval: 10,
+        StorageImpl: MockStorage,
+    });
+
+    test('should poll for changes', () => {
+        return new Promise((resolve, reject) => {
+            let assertCount = 5;
+            repo.on('data', () => {
+                assertCount--;
+                if (assertCount === 0) {
+                    repo.stop();
+                    expect(assertCount === 0).toBeTruthy();
+                    resolve();
+                }
+            });
+            repo.on('error', reject);
+        });
+    })
+
+});
+
+
+
+/*
+
+
+
+*/

@@ -174,4 +174,12 @@ export default class Repository extends EventEmitter implements EventEmitter {
         const toggles = this.storage.getAll();
         return Object.keys(toggles).map(key => toggles[key]);
     }
+
+    getETag(): string {
+        return this.etag ?? '';
+    }
+
+    setEtag(etag: string):void {
+        this.etag = etag;
+    }
 }
