@@ -35,38 +35,43 @@ function overrideMatchesContext(context: IExperimentContext): (o: IContextOverri
 }
 
 function findOverride(feature: IExperiment, context: IExperimentContext): IExperimentVariantDefinition | undefined {
+    if (feature.variants !== null && feature.variants !== undefined) { 
     return feature.variants
         .filter(variant => variant.overrides)
-        .find(variant => variant.overrides.some(overrideMatchesContext(context)));
+        .find(variant => variant.overrides?.some(overrideMatchesContext(context)));
+    }
 }
 
 export function selectVariant(
     feature: IExperiment,
     context: IExperimentContext,
 ): IExperimentVariantDefinition | null {
-    const totalWeight = feature.variants.reduce((acc, v) => acc + v.weight, 0);
-    if (totalWeight <= 0) {
-        return null;
-    }
-    const variantOverride = findOverride(feature, context);
-    if (variantOverride) {
-        return variantOverride;
-    }
-    const target = normalizedValue(getSeed(context), feature.name, totalWeight);
+    if (feature.variants !== null && feature.variants !== undefined) { 
+        const totalWeight = feature.variants.reduce((acc, v) => acc + v.weight, 0);
+        if (totalWeight <= 0) {
+            return null;
+        }
+        const variantOverride = findOverride(feature, context);
+        if (variantOverride) {
+            return variantOverride;
+        }
+        const target = normalizedValue(getSeed(context), feature.name, totalWeight);
 
-    let counter = 0;
-    const variant = feature.variants.find(
-        (variant: IExperimentVariantDefinition): any => {
-            if (variant.weight === 0) {
-                return;
-            }
-            counter += variant.weight;
-            if (counter < target) {
-                return;
-            } else {
-                return variant;
-            }
-        },
-    );
-    return variant || null;
+        let counter = 0;
+        const variant = feature.variants.find(
+            (variant: IExperimentVariantDefinition): any => {
+                if (variant.weight === 0) {
+                    return;
+                }
+                counter += variant.weight;
+                if (counter < target) {
+                    return;
+                } else {
+                    return variant;
+                }
+            },
+        );
+        return variant || null;
+    }
+    return null;
 }

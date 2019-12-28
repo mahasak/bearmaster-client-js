@@ -16,7 +16,7 @@ export interface IExperiment {
     description?: string;
     enabled: boolean;
     strategies: IExperimentStrategyInfo[];
-    variants: IExperimentVariantDefinition[];
+    variants: IExperimentVariantDefinition[] | undefined;
 }
 
 export interface IExperimentStrategy {
@@ -41,7 +41,7 @@ export interface IExperimentConstraint {
 
 export interface IExperimentParam {
     name: string;
-    type: ParamType;
+    type: string;
     value: string;
 }
 
@@ -54,7 +54,7 @@ export interface IExperimentVariantDefinition {
     name: string;
     weight: number;
     params: IExperimentParam[];
-    overrides: IContextOverride[];
+    overrides?: IContextOverride[];
 }
 
 export interface IExperimentVariant {
