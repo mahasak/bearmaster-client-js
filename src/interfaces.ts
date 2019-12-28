@@ -45,16 +45,22 @@ export interface IExperimentParam {
     value: string;
 }
 
+export interface IContextOverride {
+    contextName: string;
+    values: String[];
+}
+
 export interface IExperimentVariantDefinition {
     name: string;
     weight: number;
     params: IExperimentParam[];
+    overrides: IContextOverride[];
 }
 
 export interface IExperimentVariant {
     name: string;
     enabled: boolean;
-    params: IExperimentParam[];
+    params?: IExperimentParam[];
 }
 
 export interface IExperimentClient {
