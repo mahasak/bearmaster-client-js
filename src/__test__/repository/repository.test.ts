@@ -3,7 +3,7 @@ import * as nock from 'nock';
 
 import Repository from '../../repository';
 import { Storage } from '../../storage';
-import { MockStorage } from './MockStorage';
+import { MockStorage } from '../mock/MockStorage';
 import { doesNotReject } from 'assert';
 import { setup } from './setup'
 

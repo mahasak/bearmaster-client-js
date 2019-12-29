@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 import * as nock from 'nock';
-import { MockStorage } from './MockStorage'
+import { MockStorage } from '../mock/MockStorage'
 import Repository from '../../repository';
 
 import { doesNotReject } from 'assert';

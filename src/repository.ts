@@ -28,8 +28,8 @@ export interface RepositoryOptions {
 export default class Repository extends EventEmitter implements EventEmitter {
     private timer: NodeJS.Timer | undefined;
     private url: string;
-    private storage: Storage;
-    private etag: string | undefined;
+    protected storage: Storage;
+    protected etag: string | undefined;
     private appName: string;
     private instanceId: string;
     private refreshInterval?: number;
