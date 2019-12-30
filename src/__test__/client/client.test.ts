@@ -263,3 +263,41 @@ test('should emit error when mising feature runtime', () => {
         });
     });
 });
+
+
+test('should always return defaultVariant if missing variant', () => {
+
+    const repo = new MockRepository({
+        backupPath: 'foo',
+        url: 'http://experiment-server-client-01.mahasak.com',
+        appName,
+        instanceId,
+        refreshInterval: 0
+    }, () => buildToggle('feature-but-no-variant', true, []));
+
+    const strategies = [new DefaultStrategy()];
+    const client = new Client(repo, strategies);
+
+    client.on('error', log).on('warn', log);
+    const result = client.getVariant('feature-but-no-variant', {});
+    const defaultVariant = {
+        enabled: false,
+        name: 'disabled',
+    };
+    expect(result).toEqual(defaultVariant);
+
+    const fallback = {
+        enabled: false,
+        name: 'customDisabled',
+        payload: {
+            type: 'string',
+            value: '',
+        },
+    };
+    const result2 = client.getVariant('feature-but-no-variant', {}, fallback);
+
+    expect(result2).toEqual(fallback);
+
+    const result3 = client.getVariant('missing-feature-x', {});
+    expect(result3).toEqual(defaultVariant);
+});
