@@ -73,13 +73,15 @@ export default class Client extends EventEmitter {
         }
 
         if (!Array.isArray(feature.strategies)) {
-            return false;
+            
             this.emit(
-                'clientError',
-                `Malformed feature, strategies not an array, is a ${typeof feature.strategies}`,
+                'error',
+                new Error(
+                    `Malformed feature, strategies not an array, is a ${typeof feature.strategies}`,
+                ),
 
             );
-            
+            return false;
         }
 
         if (feature.strategies.length === 0) {
