@@ -232,4 +232,20 @@ export class BearMaster extends EventEmitter {
     countVariant(toggleName: string, variantName: string) {
         this.metrics.countVariant(toggleName, variantName);
     }
+
+    getRepository(): RepositoryInterface {
+        return this.repository
+    }
+
+    getMetrics(): Metrics {
+        return this.metrics
+    }
+
+    getRepositoryUrl(): string {
+        return this.repository.getUrl();
+    }
+
+    isClientTerminated(): boolean {
+        return this.client === undefined;
+    }
 }

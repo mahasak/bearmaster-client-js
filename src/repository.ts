@@ -10,6 +10,8 @@ export type StorageImpl = typeof Storage;
 export interface RepositoryInterface extends EventEmitter {
     getToggle(name: string): IExperiment;
     getToggles(): IExperiment[];
+    getUrl(): string;
+    getStorage(): Storage;
     stop(): void;
 }
 
@@ -28,7 +30,7 @@ export interface RepositoryOptions {
 export default class Repository extends EventEmitter implements EventEmitter {
     private timer: NodeJS.Timer | undefined;
     private url: string;
-    protected storage: Storage;
+    public storage: Storage;
     protected etag: string | undefined;
     private appName: string;
     private instanceId: string;
@@ -173,6 +175,14 @@ export default class Repository extends EventEmitter implements EventEmitter {
     getToggles(): IExperiment[] {
         const toggles = this.storage.getAll();
         return Object.keys(toggles).map(key => toggles[key]);
+    }
+
+    getUrl(): string {
+        return this.url;
+    }
+
+    getStorage(): Storage {
+        return this.storage;
     }
 
     getETag(): string {
