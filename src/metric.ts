@@ -29,7 +29,7 @@ interface Bucket {
 }
 
 export default class Metrics extends EventEmitter {
-    private bucket: Bucket | undefined;
+    private bucket!: Bucket;
     private appName: string;
     private instanceId: string;
     private sdkVersion: string;
@@ -75,7 +75,7 @@ export default class Metrics extends EventEmitter {
         }
     }
 
-    private startTimer() {
+    private startTimer():boolean {
         if (this.disabled) {
             return false;
         }
@@ -165,6 +165,7 @@ export default class Metrics extends EventEmitter {
                 this.startTimer();
                 if (err) {
                     this.emit('error', err);
+                    console.log(err);
                     return;
                 }
 
@@ -180,6 +181,7 @@ export default class Metrics extends EventEmitter {
                     this.emit('warn', `${url} returning ${res.statusCode}`, body);
                     return;
                 }
+
                 this.emit('sent', payload);
             },
         );
@@ -268,6 +270,30 @@ export default class Metrics extends EventEmitter {
             started: this.started,
             interval: this.metricsInterval,
         };
+    }
+
+    getTimer(): NodeJS.Timer | undefined {
+        return this.timer;
+    }
+
+    getIsStarted(): boolean {
+        return this.startTimer()
+    }
+    
+    getIsDisbled(): boolean {
+        return this.disabled;
+    }
+
+    getBucketToggleLength(): number {
+        return Object.keys(this.bucket.toggles).length;
+    }
+
+    getToggle(name: string) {
+        return this.bucket.toggles[name]
+    }
+
+    getToggles() {
+        return this.bucket.toggles
     }
 
     getMetricsData(): Data {
