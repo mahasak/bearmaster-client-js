@@ -5,12 +5,14 @@ import { join } from 'path';
 import * as mkdirp from 'mkdirp';
 import { EventEmitter } from 'events';
 //import sinon from 'sinon';
-import { 
+import {
     BearMaster,
-    IExperimentStrategy, 
+    IExperimentStrategy,
 } from '../../BearMaster'
 import { Strategy } from '../../strategy/Strategy';
 import { IExperimentConstraint, IExperimentContext } from '../../interfaces'
+import { MockStorage } from '../mock/MockStorage';
+import { Storage } from '../../storage';
 
 class EnvironmentStrategy extends Strategy {
     constructor() {
@@ -67,6 +69,16 @@ class FakeRepo extends EventEmitter {
     getToggle() {
         return this.data;
     }
+    getToggles() {
+        return this.data;
+    }
+    getUrl() {
+        return '';
+    }
+    getStorage() {
+        return new MockStorage();
+    }
+
 }
 
 function mockNetwork(toggles = defaultToggles, url = getUrl()) {
@@ -93,7 +105,7 @@ test('calling destroy synchronously should avoid network activity', () => {
         url,
         disableMetrics: true,
     });
-    
+
     instance.destroy();
     expect(instance.isClientTerminated()).toBe(true);
 });
@@ -117,7 +129,7 @@ describe('should handle old url', () => {
             });
         })
     });
-    
+
     instance.destroy();
 });
 
@@ -155,10 +167,303 @@ test('should re-emit error from repository, storage and metrics', () => {
     instance.on('error', e => {
         expect(e).toBeTruthy();
     });
-    
+
     instance.getRepository().emit('error', new Error());
     instance.getRepository().getStorage().emit('error', new Error());
     instance.getMetrics().emit('error', new Error());
 
     instance.destroy();
 });
+
+
+test('should re-emit events from repository and metrics', () => {
+    const url = mockNetwork();
+    const instance = new BearMaster({
+        appName: 'foo',
+        refreshInterval: 0,
+        disableMetrics: true,
+        url,
+    });
+
+    expect.assertions(5)
+    instance.on('warn', e => expect(e).toBeTruthy());
+    instance.on('sent', e => expect(e).toBeTruthy());
+    instance.on('registered', e => expect(e).toBeTruthy());
+    instance.on('count', e => expect(e).toBeTruthy());
+
+    instance.getRepository().emit('warn', true);
+    instance.getMetrics().emit('warn', true);
+    instance.getMetrics().emit('sent', true);
+    instance.getMetrics().emit('registered', true);
+    instance.getMetrics().emit('count', true);
+
+    instance.destroy();
+});
+
+
+describe('repository should surface error when invalid basePath', () => {
+    const url = 'http://unleash-surface.app/';
+    nock(url)
+        .get('/client/features')
+        .delay(100)
+        .reply(200, { features: [] });
+    const backupPath = join(tmpdir(), `test-tmp-${Math.round(Math.random() * 100000)}`);
+    const instance = new BearMaster({
+        appName: 'foo',
+        disableMetrics: true,
+        refreshInterval: 0,
+        url,
+        backupPath,
+    });
+
+    test('should warn', async () => {
+        return new Promise((resolve, reject) => {
+            instance.once('error', err => {
+                expect(err).toBeTruthy;
+                expect(err.code).toBe('ENOENT');
+
+                instance.destroy();
+
+                resolve()
+            });
+        })
+    });
+});
+
+test('should allow request even before unleash is initialized', () => {
+    const url = mockNetwork();
+    const instance = new BearMaster({
+        appName: 'foo',
+        disableMetrics: true,
+        url,
+        backupPath: getRandomBackupPath(),
+    }).on('error', err => {
+        throw err;
+    });
+    expect(instance.isEnabled('unknown')).toBeFalsy()
+    instance.destroy();
+});
+
+test('should consider known feature-toggle as active', () =>
+    new Promise((resolve, reject) => {
+        const url = mockNetwork();
+        const instance = new BearMaster({
+            appName: 'foo',
+            disableMetrics: true,
+            url,
+            backupPath: getRandomBackupPath(),
+        }).on('error', reject);
+
+        instance.on('ready', () => {
+            expect(instance.isEnabled('feature')).toBeTruthy()
+            instance.destroy();
+            resolve();
+        });
+    }));
+
+test('should consider unknown feature-toggle as disabled', () =>
+    new Promise((resolve, reject) => {
+        const url = mockNetwork();
+        const instance = new BearMaster({
+            appName: 'foo',
+            disableMetrics: true,
+            url,
+            backupPath: getRandomBackupPath(),
+        }).on('error', reject);
+
+        instance.on('ready', () => {
+            expect(instance.isEnabled('unknown')).toBeFalsy()
+            instance.destroy();
+            resolve();
+        });
+    }));
+
+test('should return fallback value until online', () =>
+    new Promise((resolve, reject) => {
+        const url = mockNetwork();
+        const instance = new BearMaster({
+            appName: 'foo',
+            disableMetrics: true,
+            url,
+            backupPath: getRandomBackupPath(),
+        }).on('error', reject);
+
+        let warnCounter = 0;
+        instance.on('warn', () => {
+            warnCounter++;
+        });
+
+        expect(instance.isEnabled('feature')).toBeFalsy()
+        expect(warnCounter).toBe(1)
+        expect(instance.isEnabled('feature', {}, false)).toBeFalsy()
+        expect(instance.isEnabled('feature', {}, true)).toBeTruthy()
+        expect(warnCounter === 3);
+
+        instance.on('ready', () => {
+            expect(instance.isEnabled('feature')).toBeTruthy()
+            expect(instance.isEnabled('feature', {}, false)).toBeTruthy();
+            instance.destroy();
+            resolve();
+        });
+    }));
+
+test('should call fallback function for unknown feature-toggle', () =>
+    new Promise((resolve, reject) => {
+        const url = mockNetwork();
+        const instance = new BearMaster({
+            appName: 'foo',
+            environment: 'test',
+            disableMetrics: true,
+            url,
+            backupPath: getRandomBackupPath(),
+        }).on('error', reject);
+
+        instance.on('ready', () => {
+            const fallbackFunc = jest.fn(() => false);
+            const name = 'unknown';
+            const result = instance.isEnabled(name, { userId: '123' }, fallbackFunc);
+            expect(result).toBeFalsy()
+            expect(fallbackFunc).toBeCalled()
+            expect(
+                fallbackFunc).toBeCalledWith(name, {
+                    appName: 'foo',
+                    environment: 'test',
+                    userId: '123',
+                })
+
+            instance.destroy();
+            resolve();
+        });
+    }));
+
+test('should not throw when os.userInfo throws', () => {
+
+
+    return new Promise((resolve, reject) => {
+        require('os').userInfo = () => {
+            throw new Error('Test exception');
+        };
+        const url = mockNetwork();
+        const instance = new BearMaster({
+            appName: 'foo',
+            disableMetrics: true,
+            url,
+            backupPath: getRandomBackupPath(),
+        }).on('error', reject);
+
+        instance.on('ready', () => {
+            resolve();
+        });
+    });
+});
+
+test('should return known feature-toggle definition', () =>
+    new Promise((resolve, reject) => {
+        const url = mockNetwork();
+        const instance = new BearMaster({
+            appName: 'foo',
+            disableMetrics: true,
+            url,
+            backupPath: getRandomBackupPath(),
+        }).on('error', reject);
+
+        instance.on('ready', () => {
+            const toggle = instance.getFeatureToggleDefinition('feature');
+            expect(toggle).toBeTruthy();
+            instance.destroy();
+            resolve();
+        });
+    }));
+
+test('should return feature-toggles', () =>
+    new Promise((resolve, reject) => {
+        const url = mockNetwork();
+        const instance = new BearMaster({
+            appName: 'foo',
+            disableMetrics: true,
+            url,
+            backupPath: getRandomBackupPath(),
+        }).on('error', reject);
+
+        instance.on('ready', () => {
+            const toggles = instance.getFeatureToggleDefinitions();
+            expect(toggles).toStrictEqual(defaultToggles);
+            instance.destroy();
+            resolve();
+        });
+    }));
+
+test('returns undefined for unknown feature-toggle definition', () =>
+    new Promise((resolve, reject) => {
+        const url = mockNetwork();
+        const instance = new BearMaster({
+            appName: 'foo',
+            disableMetrics: true,
+            url,
+            backupPath: getRandomBackupPath(),
+        }).on('error', reject);
+
+        instance.on('ready', () => {
+            const toggle = instance.getFeatureToggleDefinition('unknown');
+            expect(toggle).toBeFalsy();
+            instance.destroy();
+            resolve();
+        });
+    }));
+
+test('should use the injected repository', () =>
+    new Promise((resolve, reject) => {
+        const repo = new FakeRepo();
+        const url = mockNetwork();
+        const instance = new BearMaster({
+            appName: 'foo',
+            disableMetrics: true,
+            url,
+            backupPath: getRandomBackupPath(),
+            repository: repo,
+        }).on('error', reject);
+        instance.on('ready', () => {
+            expect(instance.isEnabled('fake-feature')).toBeFalsy();
+            instance.destroy();
+            resolve();
+        });
+        repo.emit('ready');
+    }));
+
+test('should add static context fields', () =>
+    new Promise((resolve, reject) => {
+        const url = mockNetwork();
+        const instance = new BearMaster({
+            appName: 'foo',
+            disableMetrics: true,
+            url,
+            backupPath: getRandomBackupPath(),
+            environment: 'prod',
+            strategies: [new EnvironmentStrategy()],
+        }).on('error', reject);
+
+        instance.on('ready', () => {
+            expect(instance.isEnabled('f-context')).toBeTruthy()
+            instance.destroy();
+            resolve();
+        });
+    }));
+
+test('should local context should take precendence over static context fields', () =>
+    new Promise((resolve, reject) => {
+        const url = mockNetwork();
+        const instance = new BearMaster({
+            appName: 'foo',
+            disableMetrics: true,
+            url,
+            backupPath: getRandomBackupPath(),
+            environment: 'prod',
+            strategies: [new EnvironmentStrategy()],
+        }).on('error', reject);
+
+        instance.on('ready', () => {
+            expect(instance.isEnabled('f-context', { environment: 'dev' })).toBeFalsy()
+            instance.destroy();
+            resolve();
+        });
+    }));

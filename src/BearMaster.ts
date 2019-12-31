@@ -177,9 +177,9 @@ export class BearMaster extends EventEmitter {
         this.client = undefined;
     }
 
-    isEnabled(name: string, context: IExperimentContext, fallbackFunction?: FallbackFunction): boolean;
-    isEnabled(name: string, context: IExperimentContext, fallbackValue?: boolean): boolean;
-    isEnabled(name: string, context: IExperimentContext, fallback?: FallbackFunction | boolean): boolean {
+    isEnabled(name: string, context?: IExperimentContext, fallbackFunction?: FallbackFunction): boolean;
+    isEnabled(name: string, context?: IExperimentContext, fallbackValue?: boolean): boolean;
+    isEnabled(name: string, context?: IExperimentContext, fallback?: FallbackFunction | boolean): boolean {
         const enhancedContext = Object.assign({}, this.staticContext, context);
         const fallbackFunc = createFallbackFunction(name, enhancedContext, fallback);
 
