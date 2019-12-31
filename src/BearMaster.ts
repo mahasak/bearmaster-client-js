@@ -13,6 +13,7 @@ import { EventEmitter } from 'events';
 import { userInfo, hostname } from 'os';
 import { getDefaultVariant } from './variant';
 import { FallbackFunction, createFallbackFunction } from './fallbackFunctions';
+import Metrics from './metric';
 
 const BACKUP_PATH: string = tmpdir();
 
@@ -22,7 +23,7 @@ export interface CustomHeaders {
 
 export type CustomHeadersFunction = () => Promise<CustomHeaders>;
 
-export interface UnleashConfig {
+export interface BearMasterConfig {
     appName: string;
     environment?: string;
     instanceId?: string;
@@ -43,10 +44,10 @@ export interface StaticContext {
     environment: string;
 }
 
-export class Unleash extends EventEmitter {
+export class BearMaster extends EventEmitter {
     private repository: RepositoryInterface;
     private client: Client | undefined;
-    //private metrics: Metrics;
+    private metrics: Metrics;
     private staticContext: StaticContext;
 
     constructor({
@@ -63,7 +64,7 @@ export class Unleash extends EventEmitter {
         customHeaders,
         customHeadersFunction,
         timeout,
-    }: UnleashConfig) {
+    }: BearMasterConfig) {
         super();
 
         if (!url) {
@@ -135,12 +136,12 @@ export class Unleash extends EventEmitter {
         this.repository.on('warn', msg => {
             this.emit('warn', msg);
         });
-        /*
+        
         this.metrics = new Metrics({
             disableMetrics,
             appName,
             instanceId,
-            strategies: strategies.map((strategy: IExperimentStrategy) => strategy.name),
+            strategies: strategies.map((strategy: IExperimentStrategy) => strategy.getName()),
             metricsInterval,
             url,
             headers: customHeaders,
@@ -168,7 +169,6 @@ export class Unleash extends EventEmitter {
         this.metrics.on('registered', payload => {
             this.emit('registered', payload);
         });
-        */
     }
 
     destroy() {
@@ -226,10 +226,10 @@ export class Unleash extends EventEmitter {
     }
 
     count(toggleName: string, enabled: boolean) {
-        //this.metrics.count(toggleName, enabled);
+        this.metrics.count(toggleName, enabled);
     }
 
     countVariant(toggleName: string, variantName: string) {
-        //this.metrics.countVariant(toggleName, variantName);
+        this.metrics.countVariant(toggleName, variantName);
     }
 }
